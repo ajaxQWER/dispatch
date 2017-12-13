@@ -1,6 +1,7 @@
 import ElementUI from 'element-ui'
 import axios from 'axios';
 
+// console.log(process.env)
 var ajax = axios.create({
     baseURL: process.env.BASE_URL, //根据环境选择地址
     headers: {},
@@ -49,3 +50,22 @@ ajax.interceptors.response.use(function(res) {
     //Do something with response error
     return Promise.reject(err);
 });
+
+//调度员登录
+export const dispatherLogin = params => {
+    return ajax.post('handler/dispatcher/login', params);
+};
+
+//获取骑手列表
+export const getRiderLists = params => {
+    return ajax.get('handler/rider', params);
+};
+
+//获取订单列表
+export const getOrderLists = params => {
+    return ajax.get('handler/order', params);
+};
+//获取订单列表
+export const getOrderDetail = orderId => {
+    return ajax.get('handler/order/' + orderId);
+};
