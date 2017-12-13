@@ -15,10 +15,9 @@
     </el-form>
 </template>
 <script>
- // import {
- //     adminLogin,
- //     getUserInfo
- // } from '@/api/api';
+ import {
+     dispatherLogin
+ } from '@/api/api';
 export default {
     data: function() {
         return {
@@ -37,9 +36,9 @@ export default {
                         username: this.ruleForm.username,
                         secretkey: this.ruleForm.secretkey
                     };
-                    adminLogin(loginParams).then(data => {
+                    dispatherLogin(loginParams).then(data => {
                         console.log(data)
-                        sessionStorage.setItem('user', JSON.stringify(data.admin));
+                        sessionStorage.setItem('user', JSON.stringify(data.shopDispatcher));
                         sessionStorage.setItem('jwt', data.jwt);
                         this.$router.push({
                             path: '/index'
