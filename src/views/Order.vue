@@ -19,44 +19,44 @@
         </el-row>
         <el-row>
             <el-table :data="orderList" border>
-            	<el-table-column prop="order_id" label="订单ID" align="center" width="80px"></el-table-column>
-                <el-table-column prop="seller_order_num" label="订单号" align="center"></el-table-column>
+            	<el-table-column prop="orderId" label="订单ID" align="center" width="80px"></el-table-column>
+                <el-table-column prop="sellerOrderNum" label="订单号" align="center"></el-table-column>
                 <el-table-column label="下单时间" align="center">
-                    <template slot-scope="scope">{{moment(scope.row.order_add_time).format('YYYY-MM-DD HH:mm:ss')}}</template>
+                    <template slot-scope="scope">{{moment(scope.row.orderAddTime).format('YYYY-MM-DD HH:mm:ss')}}</template>
                 </el-table-column>
                 <el-table-column label="需要送达时间" align="center">
-                    <template slot-scope="scope">{{moment(scope.row.require_receive_time).format('YYYY-MM-DD HH:mm:ss')}}</template>
+                    <template slot-scope="scope">{{moment(scope.row.requireReceiveTime).format('YYYY-MM-DD HH:mm:ss')}}</template>
                 </el-table-column>
             	<el-table-column label="取货点信息" align="center">
                     <el-table-column label="门店名称" align="center">
-                        <template slot-scope="scope">{{scope.row.pick_up_info&&scope.row.pick_up_info.pick_up_name?scope.row.pick_up_info.pick_up_name:'-'}}</template>
+                        <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.pickUpName?scope.row.pickUpInfo.pickUpName:'-'}}</template>
                     </el-table-column>
                     <el-table-column label="门店编号" align="center">
-                        <template slot-scope="scope">{{scope.row.pick_up_info&&scope.row.pick_up_info.store_code?scope.row.pick_up_info.store_code:'-'}}</template>
+                        <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.storeCode?scope.row.pickUpInfo.storeCode:'-'}}</template>
                     </el-table-column>
                     <el-table-column label="联系方式" align="center">
-                        <template slot-scope="scope">{{scope.row.pick_up_info&&scope.row.pick_up_info.pick_up_phone?scope.row.pick_up_info.pick_up_phone:'-'}}</template>
+                        <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.pickUpPhone?scope.row.pickUpInfo.pickUpPhone:'-'}}</template>
                     </el-table-column>
                     <el-table-column label="取货地址" align="center">
-                        <template slot-scope="scope">{{scope.row.pick_up_info&&scope.row.pick_up_info.pick_up_address?scope.row.pick_up_info.pick_up_address:'-'}}</template>
+                        <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.pickUpAddress?scope.row.pickUpInfo.pickUpAddress:'-'}}</template>
                     </el-table-column>
                 </el-table-column>
                 <el-table-column label="收货人信息" align="center">
                     <el-table-column label="收货人名称" align="center">
-                        <template slot-scope="scope">{{scope.row.recevier_info&&scope.row.recevier_info.receiver_name?scope.row.recevier_info.receiver_name:'-'}}</template>
+                        <template slot-scope="scope">{{scope.row.recevierInfo&&scope.row.recevierInfo.receiverName?scope.row.recevierInfo.receiverName:'-'}}</template>
                     </el-table-column>
                     <el-table-column label="联系方式" align="center">
-                        <template slot-scope="scope">{{scope.row.recevier_info&&scope.row.recevier_info.receiver_primary_phone?scope.row.recevier_info.receiver_primary_phone:'-'}}</template>
+                        <template slot-scope="scope">{{scope.row.recevierInfo&&scope.row.recevierInfo.receiverPrimaryPhone?scope.row.recevierInfo.receiverPrimaryPhone:'-'}}</template>
                     </el-table-column>
                     <el-table-column label="备用联系方式" align="center">
-                        <template slot-scope="scope">{{scope.row.recevier_info&&scope.row.recevier_info.receiver_second_phone?scope.row.recevier_info.receiver_second_phone:'-'}}</template>
+                        <template slot-scope="scope">{{scope.row.recevierInfo&&scope.row.recevierInfo.receiverSecondPhone?scope.row.recevierInfo.receiverSecondPhone:'-'}}</template>
                     </el-table-column>
                     <el-table-column label="收货地址" align="center">
-                        <template slot-scope="scope">{{scope.row.recevier_info&&scope.row.recevier_info.receiver_address?scope.row.recevier_info.receiver_address:'-'}}</template>
+                        <template slot-scope="scope">{{scope.row.recevierInfo&&scope.row.recevierInfo.receiverAddress?scope.row.recevierInfo.receiverAddress:'-'}}</template>
                     </el-table-column>
                 </el-table-column>
-            	<el-table-column prop="order_status" label="订单状态" align="center" width="100px">
-                    <template slot-scope="scope">{{formatOrderStatus(scope.row.order_status)}}</template>
+            	<el-table-column prop="orderStatus" label="订单状态" align="center" width="100px">
+                    <template slot-scope="scope">{{formatOrderStatus(scope.row.orderStatus)}}</template>
                 </el-table-column>
                 <el-table-column label="操作" align="center" width="80px">
                     <template slot-scope="scope">
@@ -125,16 +125,6 @@ export default {
             	this.counts = res.count;
             })
         },
-        formatMoney: function(money) {
-            money = parseFloat((money + "").replace(/[^\d\.-]/g, "")).toFixed(2) + "";
-            var l = money.split(".")[0].split("").reverse();
-            var r = money.split(".")[1];
-            var t = "";
-            for (var i = 0; i < l.length; i++) {
-                t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
-            }
-            return t.split("").reverse().join("") + "." + r;
-        },
         formatOrderStatus: function(status){
             switch(status){
                 case 'WAIT_ALLOCATE':
@@ -156,8 +146,7 @@ export default {
             }
         },
         showOrderDetail: function(row){
-            console.log(row.order_id)
-            this.$router.push({path: '/orderDetail', query: {orderId: row.order_id}})
+            this.$router.push({path: '/orderDetail', query: {orderId: row.orderId}})
         },
         orderChange: function(value){
             console.log(value)

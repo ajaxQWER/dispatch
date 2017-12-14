@@ -8,56 +8,53 @@
         </el-row>
         <el-row>
             <el-form v-if="orderDetail">
-                <el-form-item label="订单id:">{{orderDetail.order_id}}</el-form-item>
-                <el-form-item label="商户订单号:">{{orderDetail.seller_order_num}}</el-form-item>
-                <el-form-item label="备注信息:">{{orderDetail.seller_remark}}</el-form-item>
-                <el-form-item label="订单流水号:">{{orderDetail.serial_number}}</el-form-item>
-                <el-form-item label="门店编号:">{{orderDetail.store_code}}</el-form-item>
-                <el-form-item label="下单时间:">{{moment(orderDetail.order_add_time).format('YYYY-MM-DD HH:mm:ss')}}</el-form-item>
-                <el-form-item label="订单状态:">{{formatOrderStatus(orderDetail.order_status)}}</el-form-item>
-                <el-form-item label="需要送达时间:">{{moment(orderDetail.require_receive_time).format('YYYY-MM-DD HH:mm:ss')}}</el-form-item>
-                <el-form-item label="订单货物件数:">{{orderDetail.goods_count + '件'}}</el-form-item>
-                <el-form-item label="订单总重量:">{{orderDetail.order_weight + 'kg'}}</el-form-item>
-                <el-form-item label="订单总金额:">{{formatMoney(orderDetail.order_total_amount) + '元'}}</el-form-item>
-                <el-form-item label="客户实际支付金额:">{{formatMoney(orderDetail.order_actual_amount) + '元'}}</el-form-item>
-                <el-form-item label="订单支付状态:">{{orderDetail.order_payment_status}}</el-form-item>
-                <el-form-item label="订单备注:">{{orderDetail.order_remark}}</el-form-item>
+                <el-form-item label="订单id:">{{orderDetail.orderId}}</el-form-item>
+                <el-form-item label="商户订单号:">{{orderDetail.sellerOrderNum}}</el-form-item>
+                <el-form-item label="备注信息:">{{orderDetail.sellerRemark}}</el-form-item>
+                <el-form-item label="订单流水号:">{{orderDetail.serialNumber}}</el-form-item>
+                <el-form-item label="门店编号:">{{orderDetail.storeCode}}</el-form-item>
+                <el-form-item label="下单时间:">{{moment(orderDetail.orderAddTime).format('YYYY-MM-DD HH:mm:ss')}}</el-form-item>
+                <el-form-item label="订单状态:">{{formatOrderStatus(orderDetail.orderStatus)}}</el-form-item>
+                <el-form-item label="需要送达时间:">{{moment(orderDetail.requireReceiveTime).format('YYYY-MM-DD HH:mm:ss')}}</el-form-item>
+                <el-form-item label="订单货物件数:">{{orderDetail.goodsCount + '件'}}</el-form-item>
+                <el-form-item label="订单总重量:">{{orderDetail.orderWeight + 'kg'}}</el-form-item>
+                <el-form-item label="订单总金额:">{{formatMoney(orderDetail.orderTotalAmount) + '元'}}</el-form-item>
+                <el-form-item label="客户实际支付金额:">{{formatMoney(orderDetail.orderActualAmount) + '元'}}</el-form-item>
+                <el-form-item label="订单支付状态:">{{orderDetail.orderPaymentStatus?'已支付':'未支付'}}</el-form-item>
+                <el-form-item label="订单备注:">{{orderDetail.orderRemark}}</el-form-item>
                 <el-form-item label="取货点信息:">
-                	<el-form v-if="orderDetail.pick_up_info" class="info-form">
-                		<el-form-item label="门店名称">{{orderDetail.pick_up_info.pick_up_name?orderDetail.pick_up_info.pick_up_name:'-'}}</el-form-item>
-                		<el-form-item label="门店编号">{{orderDetail.pick_up_info.store_code?orderDetail.pick_up_info.store_code:'-'}}</el-form-item>
-                		<el-form-item label="门店地址">{{orderDetail.pick_up_info.pick_up_address?orderDetail.pick_up_info.pick_up_address:'-'}}</el-form-item>
-                		<el-form-item label="联系方式">{{orderDetail.pick_up_info.pick_up_phone?orderDetail.pick_up_info.pick_up_phone:'-'}}</el-form-item>
-                		<el-form-item label="门店经度">{{orderDetail.pick_up_info.pick_up_longitude?orderDetail.pick_up_info.pick_up_longitude:'-'}}</el-form-item>
-                		<el-form-item label="门店纬度">{{orderDetail.pick_up_info.pick_up_remark?orderDetail.pick_up_info.pick_up_remark:'-'}}</el-form-item>
-                		<el-form-item label="备注">{{orderDetail.pick_up_info.pick_up_name?orderDetail.pick_up_info.pick_up_name:'-'}}</el-form-item>
+                	<el-form v-if="orderDetail.pickUpInfo" class="info-form">
+                		<el-form-item label="门店名称:">{{orderDetail.pickUpInfo.pickUpName?orderDetail.pickUpInfo.pickUpName:'-'}}</el-form-item>
+                		<el-form-item label="门店编号:">{{orderDetail.pickUpInfo.storeCode?orderDetail.pickUpInfo.storeCode:'-'}}</el-form-item>
+                		<el-form-item label="门店地址:">{{orderDetail.pickUpInfo.pickUpAddress?orderDetail.pickUpInfo.pickUpAddress:'-'}}</el-form-item>
+                		<el-form-item label="联系方式:">{{orderDetail.pickUpInfo.pickUpPhone?orderDetail.pickUpInfo.pickUpPhone:'-'}}</el-form-item>
+                		<el-form-item label="门店经度:">{{orderDetail.pickUpInfo.pickUpLongitude?orderDetail.pickUpInfo.pickUpLongitude:'-'}}</el-form-item>
+                		<el-form-item label="门店纬度:">{{orderDetail.pickUpInfo.pickUpLatitude?orderDetail.pickUpInfo.pickUpLatitude:'-'}}</el-form-item>
+                		<el-form-item label="备注:">{{orderDetail.pickUpInfo.pickUpRemark?orderDetail.pickUpInfo.pickUpRemark:'-'}}</el-form-item>
                 	</el-form>
                 </el-form-item>
                 <el-form-item label="收货人信息:">
-                	<el-form v-if="orderDetail.recevier_info" class="info-form">
-                		<el-form-item label="收货人ID">{{orderDetail.recevier_info.recevier_id?orderDetail.recevier_info.recevier_id:'-'}}</el-form-item>
-                		<el-form-item label="收货人名称">{{orderDetail.recevier_info.pick_up_name?orderDetail.recevier_info.pick_up_name:'-'}}</el-form-item>
-                		<el-form-item label="联系地址">{{orderDetail.recevier_info.receiver_address?orderDetail.recevier_info.receiver_address:'-'}}</el-form-item>
-                		<el-form-item label="联系方式">{{orderDetail.recevier_info.receiver_primary_phone?orderDetail.recevier_info.receiver_primary_phone:'-'}}</el-form-item>
-                		<el-form-item label="备用联系方式">{{orderDetail.recevier_info.receiver_second_phone?orderDetail.recevier_info.receiver_second_phone:'-'}}</el-form-item>
-                		<el-form-item label="收货人经度">{{orderDetail.recevier_info.receiver_longitude?orderDetail.recevier_info.receiver_longitude:'-'}}</el-form-item>
-                		<el-form-item label="收货人纬度">{{orderDetail.recevier_info.receiver_latitude?orderDetail.recevier_info.receiver_latitude:'-'}}</el-form-item>
+                	<el-form v-if="orderDetail.recevierInfo" class="info-form">
+                		<el-form-item label="geohash:">{{orderDetail.recevierInfo.geohash || '-'}}</el-form-item>
+                		<el-form-item label="收货人名称:">{{orderDetail.recevierInfo.receiverName?orderDetail.recevierInfo.receiverName:'-'}}</el-form-item>
+                		<el-form-item label="联系地址:">{{orderDetail.recevierInfo.receiverAddress?orderDetail.recevierInfo.receiverAddress:'-'}}</el-form-item>
+                		<el-form-item label="联系方式:">{{orderDetail.recevierInfo.receiverPrimaryPhone?orderDetail.recevierInfo.receiverPrimaryPhone:'-'}}</el-form-item>
+                		<el-form-item label="备用联系方式:">{{orderDetail.recevierInfo.receiverSecondPhone?orderDetail.recevierInfo.receiverSecondPhone:'-'}}</el-form-item>
+                		<el-form-item label="收货人经度:">{{orderDetail.recevierInfo.receiverLongitude?orderDetail.recevierInfo.receiverLongitude:'-'}}</el-form-item>
+                		<el-form-item label="收货人纬度:">{{orderDetail.recevierInfo.receiverLatitude?orderDetail.recevierInfo.receiverLatitude:'-'}}</el-form-item>
                 	</el-form>
                 </el-form-item>
                 <el-form-item label="订单商品:">
                 	<el-table v-if="orderDetail.orderGoods" :data="orderDetail.orderGoods" style="width: 1000px; margin-left: 20px;" border>
                 	    <el-table-column label="序号" type="index" width="80" align="center"></el-table-column>
-                	    <el-table-column property="order_goods_id" label="商品ID" align="center"></el-table-column>
-                	    <el-table-column property="order_goods_name" label="商品名称" align="center"></el-table-column>
-                	    <el-table-column property="order_goods_size" label="商品数量" align="center">
+                	    <el-table-column property="orderGoodsId" label="商品ID" align="center"></el-table-column>
+                	    <el-table-column property="orderGoodsName" label="商品名称" align="center"></el-table-column>
+                	    <el-table-column property="orderGoodsQuantity" label="商品数量" align="center">
                 	    </el-table-column>
-                	    <el-table-column label="商品金额" align="center">
-                	        <template slot-scope="scope">
-                	            {{scope.row.order_goods_price?formatMoney(scope.row.order_goods_price) : '0.00'}}元
-                	        </template>
-                	    </el-table-column>
-                	    <el-table-column property="order_goods_price" label="商品尺寸" align="center"></el-table-column>
-                	    <el-table-column property="order_goods_remark" label="备注" align="center"></el-table-column>
+                	    <el-table-column property="orderGoodsPrice" label="订单金额" align="center"></el-table-column>
+                	    <el-table-column property="orderGoodsActualPrice" label="实际金额" align="center"></el-table-column>
+                	    <el-table-column property="orderGoodsSize" label="商品尺寸" align="center"></el-table-column>
+                	    <el-table-column property="orderGoodsRemark" label="备注" align="center"></el-table-column>
                 	</el-table>
                 </el-form-item>
             </el-form>
@@ -79,6 +76,14 @@ import {getOrderDetail} from '@/api/api'
 					console.log(res)
 					this.orderDetail = res;
 				})
+			}else{
+				this.$message({
+					message: '订单ID无效',
+					type: 'error'
+				})
+				setTimeout(() => {
+					this.back()
+				}, 1500)
 			}
 		},
 		methods: {
