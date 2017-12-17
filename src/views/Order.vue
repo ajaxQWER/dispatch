@@ -7,19 +7,15 @@
             <el-form :inline="true">
                 <el-form-item label="搜索订单">
                     <el-select v-model="orderStatus" placeholder="请选择订单状态" @change="orderChange">
-                        <el-option
-                                v-for="(item,index) in orderStatusList"
-                                :key="index"
-                                :label="item.label"
-                                :value="item.value">
+                        <el-option v-for="(item,index) in orderStatusList" :key="index" :label="item.label" :value="item.value">
                         </el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
         </el-row>
         <el-row>
-            <el-table :data="orderList" border>
-            	<el-table-column prop="orderId" label="订单ID" align="center" width="80px"></el-table-column>
+            <el-table :data="orderList" border :row-style="{fontSize:'12px'}">
+                <el-table-column prop="orderId" label="订单ID" align="center" width="80px"></el-table-column>
                 <el-table-column prop="sellerOrderNum" label="订单号" align="center"></el-table-column>
                 <el-table-column label="下单时间" align="center">
                     <template slot-scope="scope">{{moment(scope.row.orderAddTime).format('YYYY-MM-DD HH:mm:ss')}}</template>
@@ -27,40 +23,38 @@
                 <el-table-column label="需要送达时间" align="center">
                     <template slot-scope="scope">{{moment(scope.row.requireReceiveTime).format('YYYY-MM-DD HH:mm:ss')}}</template>
                 </el-table-column>
-            	<el-table-column label="取货点信息" align="center">
-                    <el-table-column label="门店名称" align="center">
-                        <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.pickUpName?scope.row.pickUpInfo.pickUpName:'-'}}</template>
+                <el-table-column label="取货点信息" align="center">
+                    <el-table-column label="门店信息" align="center">
+                        <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.pickUpName?scope.row.pickUpInfo.pickUpName:'-'}}
+                            <br><span v-if="scope.row.pickUpInfo.pickUpPhone">({{scope.row.pickUpInfo.pickUpPhone}})</span></template>
                     </el-table-column>
                     <el-table-column label="门店编号" align="center">
                         <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.storeCode?scope.row.pickUpInfo.storeCode:'-'}}</template>
                     </el-table-column>
-                    <el-table-column label="联系方式" align="center">
+                    <!-- <el-table-column label="联系方式" align="center">
                         <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.pickUpPhone?scope.row.pickUpInfo.pickUpPhone:'-'}}</template>
-                    </el-table-column>
+                    </el-table-column> -->
                     <el-table-column label="取货地址" align="center">
                         <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.pickUpAddress?scope.row.pickUpInfo.pickUpAddress:'-'}}</template>
                     </el-table-column>
                 </el-table-column>
                 <el-table-column label="收货人信息" align="center">
-                    <el-table-column label="收货人名称" align="center">
-                        <template slot-scope="scope">{{scope.row.recevierInfo&&scope.row.recevierInfo.receiverName?scope.row.recevierInfo.receiverName:'-'}}</template>
-                    </el-table-column>
-                    <el-table-column label="联系方式" align="center">
-                        <template slot-scope="scope">{{scope.row.recevierInfo&&scope.row.recevierInfo.receiverPrimaryPhone?scope.row.recevierInfo.receiverPrimaryPhone:'-'}}</template>
-                    </el-table-column>
-                    <el-table-column label="备用联系方式" align="center">
-                        <template slot-scope="scope">{{scope.row.recevierInfo&&scope.row.recevierInfo.receiverSecondPhone?scope.row.recevierInfo.receiverSecondPhone:'-'}}</template>
+                    <el-table-column label="收货人" align="center">
+                        <template slot-scope="scope">{{scope.row.recevierInfo&&scope.row.recevierInfo.receiverName?scope.row.recevierInfo.receiverName:'-'}}
+                            <br><span v-if="scope.row.recevierInfo.receiverPrimaryPhone">{{scope.row.recevierInfo.receiverPrimaryPhone}}</span><span v-if="scope.row.recevierInfo.receiverSecondPhone">/{{scope.row.recevierInfo.receiverSecondPhone}}</span></template>
                     </el-table-column>
                     <el-table-column label="收货地址" align="center">
                         <template slot-scope="scope">{{scope.row.recevierInfo&&scope.row.recevierInfo.receiverAddress?scope.row.recevierInfo.receiverAddress:'-'}}</template>
                     </el-table-column>
                 </el-table-column>
-            	<el-table-column prop="orderStatus" label="订单状态" align="center" width="100px">
+                <el-table-column prop="orderStatus" label="订单状态" align="center" width="100px">
                     <template slot-scope="scope">{{formatOrderStatus(scope.row.orderStatus)}}</template>
                 </el-table-column>
-                <el-table-column label="操作" align="center" width="80px">
+                <el-table-column label="操作" align="center" width="210px">
                     <template slot-scope="scope">
                         <el-button class="audit-btn" size="small" type="primary" @click="showOrderDetail(scope.row)">详情</el-button>
+                        <el-button class="audit-btn" size="small" type="success" @click="showDispatchOrderDialog(scope.row, true)" :disabled="scope.row.orderStatus != 'WAIT_ALLOCATE'">派单</el-button>
+                        <el-button class="audit-btn" size="small" type="danger" @click="showDispatchOrderDialog(scope.row, false)" :disabled="formatDisabaled(scope.row.orderStatus)">改派</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -70,10 +64,34 @@
             <el-pagination @current-change="currentChange" :current-page="pageId" :page-size="pageSize" layout="total, prev, pager, next" :total="counts">
             </el-pagination>
         </el-row>
+        <el-dialog :title="dispatch?'派单':'改派'" :visible.sync="dispatchOrderDialog" size="small" @close="closedispatchOrderDialog" class="dialog">
+            <el-form label-width="120px">
+                <el-form-item label="订单地图:">
+                    <div class="amap-container" v-if="dispatchOrderDialog">
+                        <el-amap ref="amap" vid="amapDemo" class="amap" :zoom="mapZoom" :center="mapCenter">
+                            <el-amap-marker v-for="(marker,index) in markers" :key="index" :position="marker.position" :title="marker.title" :icon="marker.icon"></el-amap-marker>
+                        </el-amap>
+                    </div>
+                </el-form-item>
+                <el-form-item label="选择骑手">
+                    <el-select v-model="riderId" placeholder="请选择骑手">
+                        <el-option v-for="(item,index) in reiderList" :key="index" :label="item.riderName" :value="item.riderId">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="closedispatchOrderDialog">取 消</el-button>
+                <el-button type="primary" @click="dispatchOrder">确 定</el-button>
+            </div>
+        </el-dialog>
     </el-row>
 </template>
 <script>
-import { getOrderLists } from '@/api/api'
+import { getOrderLists, getRiderLists, doDispatchOrder, reDoDispatchOrder, getOrderGeoInfo } from '@/api/api'
+import shop from '@/assets/images/shop.png'
+import carrier from '@/assets/images/carrier.png'
+import buyer from '@/assets/images/buyer.png'
 export default {
     data: function() {
         return {
@@ -85,31 +103,41 @@ export default {
             orderStatusList: [{
                 label: '全部',
                 value: ''
-            },{
+            }, {
                 label: '待分配',
                 value: 'WAIT_ALLOCATE'
-            },{
+            }, {
                 label: '待取货',
                 value: 'WAIT_PICKUP'
-            },{
+            }, {
                 label: '取货中',
                 value: 'PICKUPING'
-            },{
+            }, {
                 label: '配送中',
                 value: 'SHIPPING'
-            },{
+            }, {
                 label: '已送达',
                 value: 'DELIVERED'
-            },{
+            }, {
                 label: '已完成',
                 value: 'TRANSACT_FINISHED'
-            },{
+            }, {
                 label: '已取消',
                 value: 'CANCELLATION'
-            },{
+            }, {
                 label: '已支付',
                 value: 'PAYED'
-            }]
+            }],
+            dispatch: true,
+            orderId: 0,
+            riderId: null,
+            reiderList: [],
+            dispatchOrderDialog: false,
+            mapZoom: 13,
+            mapCenter: [],
+            markers: [],
+            lngArr: [],
+            latArr: []
         }
     },
     created: function() {
@@ -119,14 +147,28 @@ export default {
     },
     methods: {
         getOrderList: function() {
-            getOrderLists({ params: {orderStatus: this.orderStatus, pageId: this.pageId, pageSize: this.pageSize} }).then(res => {
-            	console.log(res)
-            	this.orderList = res.list;
-            	this.counts = res.count;
+            getOrderLists({ params: { orderStatus: this.orderStatus, pageId: this.pageId, pageSize: this.pageSize } }).then(res => {
+                console.log(res)
+                this.orderList = res.list;
+                this.counts = res.count;
             })
         },
-        formatOrderStatus: function(status){
-            switch(status){
+        getRiderList: function() {
+            getRiderLists({ params: { pageSize: 99999 } }).then(res => {
+                console.log(res)
+                this.reiderList = res.list;
+                res.list.forEach((item) => {
+                    if(item['riderLocation']['riderLocationLongitude']){
+                        this.markers.push({ position: [item['riderLocation']['riderLocationLongitude'], item['riderLocation']['riderLocationLatitude']], title: item.riderName, icon: this.formatMakerIconSrc('carrier') })
+                        this.lngArr.push(item['riderLocation']['riderLocationLongitude'])
+                        this.latArr.push(item['riderLocation']['riderLocationLatitude'])
+                    }
+                })
+                this.getAllGeoInfo(this.orderId)
+            })
+        },
+        formatOrderStatus: function(status) {
+            switch (status) {
                 case 'WAIT_ALLOCATE':
                     return '待分配';
                 case 'WAIT_PICKUP':
@@ -145,15 +187,122 @@ export default {
                     return '已支付';
             }
         },
-        showOrderDetail: function(row){
-            this.$router.push({path: '/orderDetail', query: {orderId: row.orderId}})
+        showOrderDetail: function(row) {
+            this.$router.push({ path: '/orderDetail', query: { orderId: row.orderId } })
         },
-        orderChange: function(value){
+        orderChange: function(value) {
             console.log(value)
             this.orderStatus = value;
-            this.$router.push({query: {orderStatus: value}})
+            this.$router.push({ query: { orderStatus: value } })
             this.getOrderList()
 
+        },
+        showDispatchOrderDialog: function(row, status) {
+            this.dispatch = status;
+            this.orderId = row.orderId;
+            this.getRiderList()
+            console.log(this.markers)
+        },
+        getAllGeoInfo: function(orderId){
+            getOrderGeoInfo(orderId).then(res => {
+                console.log(res)
+                for (var key in res) {
+                    if (res[key]['longitude'] && key != 'carrier') {
+                        this.markers.push({ position: [res[key]['longitude'], res[key]['latitude']], title: this.formatMakerTitle(key), icon: this.formatMakerIconSrc(key) })
+                        this.lngArr.push(res[key]['longitude'])
+                        this.latArr.push(res[key]['latitude'])
+                    }
+                }
+
+                //求地图中心点 经度和/点坐标数
+                var mapCenterLng = this.lngArr.reduce((prev,curr) => prev + curr) / this.markers.length;
+                var mapCenterLat = this.latArr.reduce((prev,curr) => prev + curr) / this.markers.length;
+                this.mapCenter = [mapCenterLng, mapCenterLat];
+
+                this.dispatchOrderDialog = true;
+            })
+        },
+        closedispatchOrderDialog: function() {
+            this.orderId = 0;
+            this.riderId = null;
+            this.dispatchOrderDialog = false;
+            this.markers = [];
+            this.mapCenter = [];
+            this.lngArr = [];
+            this.latArr = [];
+
+        },
+        dispatchOrder: function() {
+            if (!this.riderId) {
+                this.$message({
+                    message: '请选择骑手',
+                    type: 'error'
+                })
+                return;
+            }
+            if (!this.orderId) {
+                this.$message({
+                    message: '订单ID错误',
+                    type: 'error'
+                })
+                return;
+            }
+            var orderId = [];
+            orderId.push(this.orderId)
+            var params = {
+                orderIds: orderId,
+                riderId: this.riderId
+            }
+            console.log(params)
+            if (this.dispatch) {
+                doDispatchOrder(params).then(() => {
+                    this.$message({
+                        message: '订单指派成功！',
+                        type: 'success'
+                    })
+                    this.getOrderList();
+                    this.closedispatchOrderDialog();
+                })
+            } else {
+                reDoDispatchOrder(params).then(() => {
+                    this.$message({
+                        message: '订单改派成功！',
+                        type: 'success'
+                    })
+                    this.getOrderList();
+                    this.closedispatchOrderDialog();
+                })
+            }
+            console.log(this.orderId, this.riderId, this.dispatch)
+        },
+        formatDisabaled: function(status) {
+            return (status == 'WAIT_ALLOCATE' || status == 'DELIVERED' || status == 'TRANSACT_FINISHED' || status == 'CANCELLATION')
+        },
+        formatMakerTitle: function(name) {
+            switch (name) {
+                case 'shop':
+                    return '店铺';
+                case 'buyer':
+                    return '买家';
+                case 'carrier':
+                    return '骑手';
+            }
+        },
+        formatMakerIconSrc: function(name) {
+            switch (name) {
+                case 'shop':
+                    return this.formatMakerIcon(shop);
+                case 'buyer':
+                    return this.formatMakerIcon(buyer);
+                case 'carrier':
+                    return this.formatMakerIcon(carrier);
+            }
+        },
+        formatMakerIcon: function(img) {
+            return new AMap.Icon({
+                image: img,
+                size: [43, 60]
+            })
         },
         //分页
         currentChange: function(val) {
@@ -185,6 +334,10 @@ export default {
     }
     .audit-btn {
         margin: 5px;
+    }
+    .amap-container {
+        width: 100%;
+        height: 500px;
     }
 }
 

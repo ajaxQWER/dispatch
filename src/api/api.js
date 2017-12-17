@@ -44,7 +44,7 @@ ajax.interceptors.response.use(function(res) {
 }, function(err) {
     console.error(err);
     ElementUI.Message.error({
-        message: '响应发生错误,请稍后再试!',
+        message: '网络错误,请稍后再试!',
         type: 'error'
     });
     //Do something with response error
@@ -65,7 +65,19 @@ export const getRiderLists = params => {
 export const getOrderLists = params => {
     return ajax.get('handler/order', params);
 };
-//获取订单列表
+//获取订单详情
 export const getOrderDetail = orderId => {
     return ajax.get('handler/order/' + orderId);
+};
+//派单
+export const doDispatchOrder = params => {
+    return ajax.post('handler/order/dispatch', params);
+};
+//改派
+export const reDoDispatchOrder = params => {
+    return ajax.post('handler/order/redispatch', params);
+};
+//获取订单经纬度信息
+export const getOrderGeoInfo = orderId => {
+    return ajax.get('handler/order/geoInfo/' + orderId);
 };
