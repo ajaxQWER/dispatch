@@ -5,9 +5,15 @@
         </el-row>
         <el-row>
             <el-form :inline="true">
-                <el-form-item label="搜索订单">
+                <el-form-item label="订单状态">
                     <el-select v-model="orderStatus" placeholder="请选择订单状态" @change="orderChange">
                         <el-option v-for="(item,index) in orderStatusList" :key="index" :label="item.label" :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="是否异常">
+                    <el-select v-model="isException" @change="exceptionChange">
+                        <el-option v-for="(item,index) in orderExceptionArr" :key="index" :label="item.label" :value="item.value">
                         </el-option>
                     </el-select>
                 </el-form-item>
@@ -48,13 +54,14 @@
                     </el-table-column>
                 </el-table-column>
                 <el-table-column prop="orderStatus" label="订单状态" align="center" width="100px">
-                    <template slot-scope="scope">{{formatOrderStatus(scope.row.orderStatus)}}</template>
+                    <template slot-scope="scope">{{formatOrderStatus(scope.row.orderStatus)}}<span v-if="scope.row.isException" class="exception"><br>异常</span></template>
                 </el-table-column>
-                <el-table-column label="操作" align="center" width="210px">
+                <el-table-column label="操作" align="center" width="150px">
                     <template slot-scope="scope">
-                        <el-button class="audit-btn" size="small" type="primary" @click="showOrderDetail(scope.row)">详情</el-button>
                         <el-button class="audit-btn" size="small" type="success" @click="showDispatchOrderDialog(scope.row, true)" :disabled="scope.row.orderStatus != 'WAIT_ALLOCATE'">派单</el-button>
                         <el-button class="audit-btn" size="small" type="danger" @click="showDispatchOrderDialog(scope.row, false)" :disabled="formatDisabaled(scope.row.orderStatus)">改派</el-button>
+                        <el-button class="audit-btn" size="small" type="danger" @click="setOrderExceptionBtn(scope.row)" :disabled="formatDisabaled(scope.row.orderStatus)">异常</el-button>
+                        <el-button class="audit-btn" size="small" type="primary" @click="showOrderDetail(scope.row)">详情</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -88,7 +95,7 @@
     </el-row>
 </template>
 <script>
-import { getOrderLists, getRiderLists, doDispatchOrder, reDoDispatchOrder, getOrderGeoInfo } from '@/api/api'
+import { getOrderLists, getRiderLists, doDispatchOrder, reDoDispatchOrder, getOrderGeoInfo, setOrderException } from '@/api/api'
 import shop from '@/assets/images/shop.png'
 import carrier from '@/assets/images/carrier.png'
 import buyer from '@/assets/images/buyer.png'
@@ -99,6 +106,7 @@ export default {
             pageSize: 20,
             counts: 0,
             orderStatus: '',
+            isException: '',
             orderList: [],
             orderStatusList: [{
                 label: '全部',
@@ -124,16 +132,23 @@ export default {
             }, {
                 label: '已取消',
                 value: 'CANCELLATION'
-            }, {
-                label: '已支付',
-                value: 'PAYED'
+            }],
+            orderExceptionArr: [{
+                label: '全部',
+                value: ''
+            },{
+                label: '异常',
+                value: 'true'
+            },{
+                label: '正常',
+                value: 'false'
             }],
             dispatch: true,
             orderId: 0,
             riderId: null,
             reiderList: [],
             dispatchOrderDialog: false,
-            mapZoom: 13,
+            mapZoom: 12,
             mapCenter: [],
             markers: [],
             lngArr: [],
@@ -142,12 +157,15 @@ export default {
     },
     created: function() {
         var orderStatus = this.$route.query.orderStatus || '';
+        var isException = this.$route.query.isException || '';
+        this.pageId = parseInt(this.$route.query.pageId) || 1;
         this.orderStatus = orderStatus;
+        this.isException = isException;
         this.getOrderList()
     },
     methods: {
         getOrderList: function() {
-            getOrderLists({ params: { orderStatus: this.orderStatus, pageId: this.pageId, pageSize: this.pageSize } }).then(res => {
+            getOrderLists({ params: { orderStatus: this.orderStatus, pageId: this.pageId, pageSize: this.pageSize, isException: this.isException } }).then(res => {
                 console.log(res)
                 this.orderList = res.list;
                 this.counts = res.count;
@@ -183,25 +201,26 @@ export default {
                     return '已完成';
                 case 'CANCELLATION':
                     return '已取消';
-                case 'PAYED':
-                    return '已支付';
             }
         },
         showOrderDetail: function(row) {
             this.$router.push({ path: '/orderDetail', query: { orderId: row.orderId } })
         },
         orderChange: function(value) {
-            console.log(value)
             this.orderStatus = value;
-            this.$router.push({ query: { orderStatus: value } })
+            this.$router.push({ query: { orderStatus: value, pageId: this.pageId, isException: this.isException } })
             this.getOrderList()
 
+        },
+        exceptionChange: function(value){
+            this.isException = value;
+            this.$router.push({ query: { orderStatus: value, pageId: this.pageId, isException: value } })
+            this.getOrderList()
         },
         showDispatchOrderDialog: function(row, status) {
             this.dispatch = status;
             this.orderId = row.orderId;
             this.getRiderList()
-            console.log(this.markers)
         },
         getAllGeoInfo: function(orderId){
             getOrderGeoInfo(orderId).then(res => {
@@ -304,9 +323,24 @@ export default {
                 size: [43, 60]
             })
         },
+        setOrderExceptionBtn: function(row){
+            this.$confirm('确定将该订单设置为异常状态?', '设置异常单', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                setOrderException(row.orderId).then(() => {
+                    this.$message({
+                        type: 'success',
+                        message: '操作成功!'
+                    });
+                    this.getOrderList()
+                })
+            }).catch(() => {});
+        },
         //分页
         currentChange: function(val) {
-            this.$router.push('?page=' + val)
+            this.$router.push({query: {orderStatus: this.orderStatus, pageId: val, isException: this.isException}})
             this.pageId = val;
             this.getOrderList()
         }
@@ -334,6 +368,9 @@ export default {
     }
     .audit-btn {
         margin: 5px;
+    }
+    .exception{
+        color: #ff0000;
     }
     .amap-container {
         width: 100%;

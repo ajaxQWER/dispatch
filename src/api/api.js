@@ -77,6 +77,10 @@ export const doDispatchOrder = params => {
 export const reDoDispatchOrder = params => {
     return ajax.post('handler/order/redispatch', params);
 };
+//改派
+export const setOrderException = orderId => {
+    return ajax.post('handler/order/setexception/' + orderId);
+};
 //获取订单经纬度信息
 export const getOrderGeoInfo = orderId => {
     return ajax.get('handler/order/geoInfo/' + orderId);
