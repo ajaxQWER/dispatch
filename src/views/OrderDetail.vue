@@ -185,7 +185,7 @@ export default {
         formatMakerIcon: function(img) {
             return new AMap.Icon({
                 image: img,
-                size: [43, 60]
+                size: [23.65, 33]
             })
         }
     }

@@ -148,7 +148,7 @@ export default {
             riderId: null,
             reiderList: [],
             dispatchOrderDialog: false,
-            mapZoom: 12,
+            mapZoom: 13,
             mapCenter: [],
             markers: [],
             lngArr: [],
@@ -214,7 +214,7 @@ export default {
         },
         exceptionChange: function(value){
             this.isException = value;
-            this.$router.push({ query: { orderStatus: value, pageId: this.pageId, isException: value } })
+            this.$router.push({ query: { orderStatus: this.orderStatus, pageId: this.pageId, isException: value } })
             this.getOrderList()
         },
         showDispatchOrderDialog: function(row, status) {
@@ -292,7 +292,6 @@ export default {
                     this.closedispatchOrderDialog();
                 })
             }
-            console.log(this.orderId, this.riderId, this.dispatch)
         },
         formatDisabaled: function(status) {
             return (status == 'WAIT_ALLOCATE' || status == 'DELIVERED' || status == 'TRANSACT_FINISHED' || status == 'CANCELLATION')
@@ -320,7 +319,7 @@ export default {
         formatMakerIcon: function(img) {
             return new AMap.Icon({
                 image: img,
-                size: [43, 60]
+                size: [23.65, 33]
             })
         },
         setOrderExceptionBtn: function(row){
