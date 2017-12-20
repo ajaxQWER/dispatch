@@ -81,7 +81,7 @@
                     </div>
                 </el-form-item>
                 <el-form-item label="选择骑手">
-                    <el-select v-model="riderId" placeholder="请选择骑手">
+                    <el-select v-model="riderId" placeholder="请选择骑手" filterable>
                         <el-option v-for="(item,index) in reiderList" :key="index" :label="item.riderName" :value="item.riderId">
                         </el-option>
                     </el-select>
@@ -220,6 +220,8 @@ export default {
         showDispatchOrderDialog: function(row, status) {
             this.dispatch = status;
             this.orderId = row.orderId;
+            console.log(row.riderCurrent);
+            // this.riderId = row.riderId;
             this.getRiderList()
         },
         getAllGeoInfo: function(orderId){

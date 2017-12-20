@@ -16,13 +16,12 @@
             	<el-table-column prop="riderName" label="骑手名" align="center"></el-table-column>
             	<el-table-column prop="username" label="联系电话" align="center"></el-table-column>
             	<el-table-column prop="nickname" label="昵称" align="center"></el-table-column>
-            	<el-table-column label="状态" align="center">
-                    <template slot-scope="scope">{{scope.row.status}}</template>
+            	<el-table-column label="骑手状态" align="center">
+                    <template slot-scope="scope">{{formatStatus(scope.row.status)}}</template>
                 </el-table-column>
             	<el-table-column prop="distributionStationId" label="配送站ID" align="center"></el-table-column>
             	<el-table-column prop="integral" label="积分" align="center"></el-table-column>
             	<el-table-column prop="balance" label="余额" align="center"></el-table-column>
-            	<el-table-column prop="accountFrozen" label="冻结余额" align="center"></el-table-column>
             	<el-table-column label="上次登陆时间" align="center">
             		<template slot-scope="scope">{{moment(scope.row.lastLoginTime).format('YYYY-MM-DD HH:mm:ss')}}</template>
             	</el-table-column>
@@ -67,6 +66,14 @@ export default {
                 t += l[i] + ((i + 1) % 3 == 0 && (i + 1) != l.length ? "," : "");
             }
             return t.split("").reverse().join("") + "." + r;
+        },
+        formatStatus: function(type){
+            switch(type){
+                case 'START_WORK':
+                    return '开工';
+                case 'STOP_WORK':
+                    return '收工';
+            }
         },
         //分页
         currentChange: function(val) {
