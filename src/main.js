@@ -39,14 +39,15 @@ Object.defineProperty(Vue.prototype, 'BASEURL', {value: process.env.BASE_URL});
 
 Object.defineProperty(Vue.prototype, 'moment', {value: moment});
 
-// router.beforeEach((to, from, next) => {
-//     let jwt = sessionStorage.getItem('jwt');
-//     if (!jwt && to.path != '/login') {
-//         next({ path: '/login' })
-//     } else {
-//         next()
-//     }
-// })
+router.beforeEach((to, from, next) => {
+    let jwt = sessionStorage.getItem('jwt');
+    if (!jwt && to.path != '/login') {
+        next({ path: '/login' })
+    } else {
+        next();
+        document.querySelector('#container').scrollTop = 0;
+    }
+})
 
 new Vue({
     router: router,

@@ -59,8 +59,8 @@
                 <el-table-column label="操作" align="center" width="150px">
                     <template slot-scope="scope">
                         <el-button class="audit-btn" size="small" type="success" @click="showDispatchOrderDialog(scope.row, true)" :disabled="scope.row.orderStatus != 'WAIT_ALLOCATE'">派单</el-button>
-                        <el-button class="audit-btn" size="small" type="danger" @click="showDispatchOrderDialog(scope.row, false)" :disabled="formatDisabaled(scope.row.orderStatus)">改派</el-button>
-                        <el-button class="audit-btn" size="small" type="danger" @click="setOrderExceptionBtn(scope.row)" :disabled="formatDisabaled(scope.row.orderStatus)">异常</el-button>
+                        <el-button class="audit-btn" size="small" type="danger" @click="showDispatchOrderDialog(scope.row, false)" :disabled="formatDisabaled(scope.row.orderStatus) || scope.row.isException">改派</el-button>
+                        <el-button class="audit-btn" size="small" type="danger" @click="setOrderExceptionBtn(scope.row)" :disabled="formatDisabaled(scope.row.orderStatus) || scope.row.isException">异常</el-button>
                         <el-button class="audit-btn" size="small" type="primary" @click="showOrderDetail(scope.row)">详情</el-button>
                     </template>
                 </el-table-column>
