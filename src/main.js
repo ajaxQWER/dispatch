@@ -44,8 +44,9 @@ router.beforeEach((to, from, next) => {
     if (!jwt && to.path != '/login') {
         next({ path: '/login' })
     } else {
-        next();
-        document.querySelector('#container').scrollTop = 0;
+        next(function(){
+            document.querySelector('#container').scrollTop = 0;
+        });
     }
 })
 
