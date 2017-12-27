@@ -17,6 +17,12 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
+                <el-form-item label="排序">
+                    <el-select v-model="sqlOrderType" @change="sortChange">
+                        <el-option v-for="(item,index) in sqlOrderTypeList" :key="index" :label="item.label" :value="item.value">
+                        </el-option>
+                    </el-select>
+                </el-form-item>
             </el-form>
         </el-row>
         <el-row>
@@ -56,12 +62,13 @@
                 <el-table-column prop="orderStatus" label="订单状态" align="center" width="100px">
                     <template slot-scope="scope">{{formatOrderStatus(scope.row.orderStatus)}}<span v-if="scope.row.isException" class="exception"><br>异常</span></template>
                 </el-table-column>
-                <el-table-column label="操作" align="center" width="150px">
+                <el-table-column label="操作" align="center" width="180px">
                     <template slot-scope="scope">
-                        <el-button class="audit-btn" size="small" type="success" @click="showDispatchOrderDialog(scope.row, true)" :disabled="scope.row.orderStatus != 'WAIT_ALLOCATE'">派单</el-button>
-                        <el-button class="audit-btn" size="small" type="danger" @click="showDispatchOrderDialog(scope.row, false)" :disabled="formatDisabaled(scope.row.orderStatus) || scope.row.isException">改派</el-button>
-                        <el-button class="audit-btn" size="small" type="danger" @click="setOrderExceptionBtn(scope.row)" :disabled="formatDisabaled(scope.row.orderStatus) || scope.row.isException">异常</el-button>
-                        <el-button class="audit-btn" size="small" type="primary" @click="showOrderDetail(scope.row)">详情</el-button>
+                        <el-button class="audit-btn" size="mini" type="success" @click="showDispatchOrderDialog(scope.row, true)" :disabled="scope.row.orderStatus != 'WAIT_ALLOCATE'">派单</el-button>
+                        <el-button class="audit-btn" size="mini" type="danger" @click="showDispatchOrderDialog(scope.row, false)" :disabled="formatDisabaled(scope.row.orderStatus) || scope.row.isException">改派</el-button>
+                        <el-button class="audit-btn" size="mini" type="danger" @click="setOrderExceptionBtn(scope.row)" :disabled="formatDisabaled(scope.row.orderStatus) || scope.row.isException">异常</el-button>
+                        <el-button class="audit-btn" size="mini" type="danger" @click="setOrderExceptionBtn(scope.row)">取消</el-button>
+                        <el-button class="audit-btn" size="mini" type="primary" @click="showOrderDetail(scope.row)">详情</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -136,13 +143,21 @@ export default {
             orderExceptionArr: [{
                 label: '全部',
                 value: ''
-            },{
+            }, {
                 label: '异常',
                 value: 'true'
-            },{
+            }, {
                 label: '正常',
                 value: 'false'
             }],
+            sqlOrderTypeList: [{
+                label: '正序',
+                value: 'ASC'
+            }, {
+                label: '倒序',
+                value: 'DESC'
+            }],
+            sqlOrderType: 'ASC',
             dispatch: true,
             orderId: 0,
             riderId: null,
@@ -158,15 +173,31 @@ export default {
     created: function() {
         var orderStatus = this.$route.query.orderStatus || '';
         var isException = this.$route.query.isException || '';
+        var sqlOrderType = this.$route.query.sqlOrderType || '';
         this.pageId = parseInt(this.$route.query.pageId) || 1;
         this.orderStatus = orderStatus;
         this.isException = isException;
+        this.sqlOrderType = sqlOrderType;
         this.getOrderList()
     },
     methods: {
         getOrderList: function() {
-            getOrderLists({ params: { orderStatus: this.orderStatus, pageId: this.pageId, pageSize: this.pageSize, isException: this.isException } }).then(res => {
+            var params = {
+                orderStatus: this.orderStatus,
+                pageId: this.pageId,
+                pageSize: this.pageSize,
+                isException: this.isException,
+                sqlOrderType: this.sqlOrderType
+            }
+            getOrderLists({ params: params }).then(res => {
                 console.log(res)
+                var str = '?';
+                for (var key in params){
+                    if(params[key]){
+                        str += key + '=' + params[key] + '&'
+                    }
+                }
+                this.$router.push(str)
                 this.orderList = res.list;
                 this.counts = res.count;
             })
@@ -176,7 +207,7 @@ export default {
                 console.log(res)
                 this.reiderList = res.list;
                 res.list.forEach((item) => {
-                    if(item['riderLocation']['riderLocationLongitude']){
+                    if (item['riderLocation']['riderLocationLongitude']) {
                         this.markers.push({ position: [item['riderLocation']['riderLocationLongitude'], item['riderLocation']['riderLocationLatitude']], title: item.riderName, icon: this.formatMakerIconSrc('carrier') })
                         this.lngArr.push(item['riderLocation']['riderLocationLongitude'])
                         this.latArr.push(item['riderLocation']['riderLocationLatitude'])
@@ -208,23 +239,24 @@ export default {
         },
         orderChange: function(value) {
             this.orderStatus = value;
-            this.$router.push({ query: { orderStatus: value, pageId: this.pageId, isException: this.isException } })
             this.getOrderList()
 
         },
-        exceptionChange: function(value){
+        exceptionChange: function(value) {
             this.isException = value;
-            this.$router.push({ query: { orderStatus: this.orderStatus, pageId: this.pageId, isException: value } })
+            this.getOrderList()
+        },
+        sortChange: function(value) {
+            this.sqlOrderType = value;
             this.getOrderList()
         },
         showDispatchOrderDialog: function(row, status) {
             this.dispatch = status;
             this.orderId = row.orderId;
-            console.log(row.riderCurrent);
             // this.riderId = row.riderId;
             this.getRiderList()
         },
-        getAllGeoInfo: function(orderId){
+        getAllGeoInfo: function(orderId) {
             getOrderGeoInfo(orderId).then(res => {
                 console.log(res)
                 for (var key in res) {
@@ -236,8 +268,8 @@ export default {
                 }
 
                 //求地图中心点 经度和/点坐标数
-                var mapCenterLng = this.lngArr.reduce((prev,curr) => prev + curr) / this.markers.length;
-                var mapCenterLat = this.latArr.reduce((prev,curr) => prev + curr) / this.markers.length;
+                var mapCenterLng = this.lngArr.reduce((prev, curr) => prev + curr) / this.markers.length;
+                var mapCenterLat = this.latArr.reduce((prev, curr) => prev + curr) / this.markers.length;
                 this.mapCenter = [mapCenterLng, mapCenterLat];
 
                 this.dispatchOrderDialog = true;
@@ -324,7 +356,7 @@ export default {
                 size: [23.65, 33]
             })
         },
-        setOrderExceptionBtn: function(row){
+        setOrderExceptionBtn: function(row) {
             this.$confirm('确定将该订单设置为异常状态?', '设置异常单', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
@@ -341,7 +373,6 @@ export default {
         },
         //分页
         currentChange: function(val) {
-            this.$router.push({query: {orderStatus: this.orderStatus, pageId: val, isException: this.isException}})
             this.pageId = val;
             this.getOrderList()
         }
@@ -370,7 +401,7 @@ export default {
     .audit-btn {
         margin: 5px;
     }
-    .exception{
+    .exception {
         color: #ff0000;
     }
     .amap-container {
