@@ -44,13 +44,13 @@
                         <el-form-item label="收货人纬度:">{{orderDetail.recevierInfo.receiverLatitude?orderDetail.recevierInfo.receiverLatitude:'-'}}</el-form-item>
                     </el-form>
                 </el-form-item>
-                <el-form-item label="骑手信息:">
-                    <el-form v-if="orderDetail.riderCurrent" class="info-form">
-                        <el-form-item label="骑手ID:">{{orderDetail.riderCurrent.riderId?orderDetail.riderCurrent.riderId:'-'}}</el-form-item>
-                        <el-form-item label="骑手名称:">{{orderDetail.riderCurrent.riderName?orderDetail.riderCurrent.riderName:'-'}}</el-form-item>
-                        <el-form-item label="联系方式:">{{orderDetail.riderCurrent.username?orderDetail.riderCurrent.username:'-'}}</el-form-item>
-                        <el-form-item label="骑手经度:">{{orderDetail.riderCurrent.riderLocation.riderLocationLongitude?orderDetail.riderCurrent.riderLocation.riderLocationLongitude:'-'}}</el-form-item>
-                        <el-form-item label="骑手纬度:">{{orderDetail.riderCurrent.riderLocation.riderLocationLatitude?orderDetail.riderCurrent.riderLocation.riderLocationLatitude:'-'}}</el-form-item>
+                <el-form-item label="骑手信息:" v-if="orderDetail.orderRider">
+                    <el-form class="info-form">
+                        <el-form-item label="骑手ID:">{{orderDetail.orderRider.riderId?orderDetail.orderRider.riderId:'-'}}</el-form-item>
+                        <el-form-item label="骑手名称:">{{orderDetail.orderRider.riderName?orderDetail.orderRider.riderName:'-'}}</el-form-item>
+                        <el-form-item label="联系方式:">{{orderDetail.orderRider.username?orderDetail.orderRider.username:'-'}}</el-form-item>
+                        <el-form-item label="骑手经度:">{{orderDetail.orderRider.riderLocation.riderLocationLongitude?orderDetail.orderRider.riderLocation.riderLocationLongitude:'-'}}</el-form-item>
+                        <el-form-item label="骑手纬度:">{{orderDetail.orderRider.riderLocation.riderLocationLatitude?orderDetail.orderRider.riderLocation.riderLocationLatitude:'-'}}</el-form-item>
                     </el-form>
                 </el-form-item>
                 <el-form-item label="订单商品:">
