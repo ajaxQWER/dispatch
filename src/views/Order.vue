@@ -70,7 +70,7 @@
                         <el-button class="audit-btn" size="mini" type="success" @click="showDispatchOrderDialog(scope.row, true)" :disabled="scope.row.orderStatus != 'WAIT_ALLOCATE'">派单</el-button>
                         <el-button class="audit-btn" size="mini" type="danger" @click="showDispatchOrderDialog(scope.row, false)" :disabled="formatDisabaled(scope.row.orderStatus) || scope.row.isException">改派</el-button>
                         <el-button class="audit-btn" size="mini" type="danger" @click="setOrderExceptionBtn(scope.row)" :disabled="formatDisabaled(scope.row.orderStatus) || scope.row.isException">异常</el-button>
-                        <el-button class="audit-btn" size="mini" type="danger" @click="setOrderExceptionBtn(scope.row)">取消</el-button>
+                        <el-button class="audit-btn" :disabled="formatCancelDisabled(scope.row.orderStatus) || scope.row.isException" size="mini" type="danger" @click="cancelOrderBtn(scope.row)">取消</el-button>
                         <el-button class="audit-btn" size="mini" type="primary" @click="showOrderDetail(scope.row)">详情</el-button>
                     </template>
                 </el-table-column>
@@ -102,10 +102,21 @@
                 <el-button type="primary" @click="dispatchOrder">确 定</el-button>
             </div>
         </el-dialog>
+        <el-dialog title="取消订单" :visible.sync="cancelOrderDialog" size="tiny" @close="closeCancelOrderDialog" class="dialog">
+            <el-form label-width="120px">
+                <el-form-item label="取消原因:">
+                    <el-input type="textarea" v-model="cancelReason" placeholder="请输入取消原因"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="closeCancelOrderDialog">取 消</el-button>
+                <el-button type="primary" @click="cancelOrder">确 定</el-button>
+            </div>
+        </el-dialog>
     </el-row>
 </template>
 <script>
-import { getOrderLists, getRiderLists, doDispatchOrder, reDoDispatchOrder, getOrderGeoInfo, setOrderException } from '@/api/api'
+import { getOrderLists, getRiderLists, doDispatchOrder, reDoDispatchOrder, getOrderGeoInfo, setOrderException, cancelOrderById } from '@/api/api'
 import shop from '@/assets/images/shop.png'
 import carrier from '@/assets/images/carrier.png'
 import buyer from '@/assets/images/buyer.png'
@@ -172,6 +183,8 @@ export default {
             lngArr: [],
             latArr: [],
             autoFresh: false,
+            cancelOrderDialog: false,
+            cancelReason: ''
         }
     },
     created: function() {
@@ -348,7 +361,10 @@ export default {
             }
         },
         formatDisabaled: function(status) {
-            return (status == 'WAIT_ALLOCATE' || status == 'DELIVERED' || status == 'TRANSACT_FINISHED' || status == 'CANCELLATION')
+            return (status == 'WAIT_ALLOCATE' || status == 'DELIVERED' || status == 'TRANSACT_FINISHED' || status == 'CANCELLATION');
+        },
+        formatCancelDisabled: function(status){
+            return (status == 'DELIVERED' || status == 'TRANSACT_FINISHED' || status == 'CANCELLATION' || status == 'REFUSED');
         },
         formatMakerTitle: function(name) {
             switch (name) {
@@ -390,6 +406,29 @@ export default {
                     this.getOrderList()
                 })
             }).catch(() => {});
+        },
+        closeCancelOrderDialog: function(){
+            this.orderId = 0;
+            this.cancelReason = '';
+            this.cancelOrderDialog = false;
+        },
+        cancelOrderBtn: function(row){
+            this.orderId = row.orderId;
+            this.cancelOrderDialog = true;
+        },
+        cancelOrder: function(){
+            var params = {
+                orderId: this.orderId,
+                content: this.cancelReason
+            }
+            cancelOrderById(params).then(() => {
+                this.$message({
+                    type: 'success',
+                    message: '操作成功!'
+                });
+                this.getOrderList();
+                this.closeCancelOrderDialog()
+            })
         },
         //分页
         currentChange: function(val) {

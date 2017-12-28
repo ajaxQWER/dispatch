@@ -77,9 +77,13 @@ export const doDispatchOrder = params => {
 export const reDoDispatchOrder = params => {
     return ajax.post('handler/order/redispatch', params);
 };
-//改派
+//设置异常单
 export const setOrderException = orderId => {
     return ajax.post('handler/order/setexception/' + orderId);
+};
+//取消订单
+export const cancelOrderById = params => {
+    return ajax.post('handler/order/cancel', params);
 };
 //获取订单经纬度信息
 export const getOrderGeoInfo = orderId => {
