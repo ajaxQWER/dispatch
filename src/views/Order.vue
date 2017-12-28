@@ -23,6 +23,9 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
+                <el-form-item>
+                    <el-checkbox v-model="autoFresh">10秒自动更新订单</el-checkbox>
+                </el-form-item>
             </el-form>
         </el-row>
         <el-row>
@@ -151,11 +154,11 @@ export default {
                 value: 'false'
             }],
             sqlOrderTypeList: [{
-                label: '正序',
-                value: 'ASC'
-            }, {
                 label: '倒序',
                 value: 'DESC'
+            }, {
+                label: '正序',
+                value: 'ASC'
             }],
             sqlOrderType: 'ASC',
             dispatch: true,
@@ -167,18 +170,35 @@ export default {
             mapCenter: [],
             markers: [],
             lngArr: [],
-            latArr: []
+            latArr: [],
+            autoFresh: false,
         }
     },
     created: function() {
         var orderStatus = this.$route.query.orderStatus || '';
         var isException = this.$route.query.isException || '';
-        var sqlOrderType = this.$route.query.sqlOrderType || '';
+        var sqlOrderType = this.$route.query.sqlOrderType || 'DESC';
         this.pageId = parseInt(this.$route.query.pageId) || 1;
         this.orderStatus = orderStatus;
         this.isException = isException;
         this.sqlOrderType = sqlOrderType;
         this.getOrderList()
+    },
+    watch: {
+        autoFresh: function(newVal, oldVal) {
+            if (newVal) {
+                this.interVal = setInterval(() => {
+                    this.getOrderList();
+                }, 10000)
+            } else {
+                clearInterval(this.interVal)
+                this.interVal = null;
+            }
+        }
+    },
+    destroyed: function() {
+        clearInterval(this.interVal)
+        this.interVal = null;
     },
     methods: {
         getOrderList: function() {
