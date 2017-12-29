@@ -70,4 +70,20 @@ img.thumb[lazy=loading] {
     width: 100%;
     height: 100%;
 }
+.rider-content{
+	width: 43px;
+	height: 25px;
+	padding-top: 35px;
+	background: url(assets/images/carrier.png) no-repeat center center;
+	background-size: contain;
+	position: relative;
+}
+.rider-name{
+	background-color: #000;
+	color: #fff;
+	font-size: 12px;
+	text-align: center;
+	line-height: 14px;
+}
+
 </style>

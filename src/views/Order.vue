@@ -35,9 +35,9 @@
                 <el-table-column label="下单时间" align="center">
                     <template slot-scope="scope">{{moment(scope.row.orderAddTime).format('YYYY-MM-DD HH:mm:ss')}}</template>
                 </el-table-column>
-                <el-table-column label="需要送达时间" align="center">
+                <!-- <el-table-column label="需要送达时间" align="center">
                     <template slot-scope="scope">{{moment(scope.row.requireReceiveTime).format('YYYY-MM-DD HH:mm:ss')}}</template>
-                </el-table-column>
+                </el-table-column> -->
                 <el-table-column label="取货点信息" align="center">
                     <el-table-column label="门店信息" align="center">
                         <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.pickUpName?scope.row.pickUpInfo.pickUpName:'-'}}
@@ -65,6 +65,9 @@
                 <el-table-column prop="orderStatus" label="订单状态" align="center" width="100px">
                     <template slot-scope="scope">{{formatOrderStatus(scope.row.orderStatus)}}<span v-if="scope.row.isException" class="exception"><br>异常</span></template>
                 </el-table-column>
+                <el-table-column label="骑手信息" align="center" width="120px">
+                    <template slot-scope="scope">{{scope.row.orderRider.riderName}}<br>{{scope.row.orderRider.username}}</template>
+                </el-table-column>
                 <el-table-column label="操作" align="center" width="180px">
                     <template slot-scope="scope">
                         <el-button class="audit-btn" size="mini" type="success" @click="showDispatchOrderDialog(scope.row, true)" :disabled="scope.row.orderStatus != 'WAIT_ALLOCATE'">派单</el-button>
@@ -82,11 +85,11 @@
             </el-pagination>
         </el-row>
         <el-dialog :title="dispatch?'派单':'改派'" :visible.sync="dispatchOrderDialog" size="small" @close="closedispatchOrderDialog" class="dialog">
-            <el-form label-width="120px">
+            <el-form label-width="100px">
                 <el-form-item label="订单地图:">
                     <div class="amap-container" v-if="dispatchOrderDialog">
                         <el-amap ref="amap" vid="amapDemo" class="amap" :zoom="mapZoom" :center="mapCenter">
-                            <el-amap-marker v-for="(marker,index) in markers" :key="index" :position="marker.position" :title="marker.title" :icon="marker.icon"></el-amap-marker>
+                            <el-amap-marker v-for="(marker,index) in markers" :key="index" :position="marker.position" :title="marker.title" :icon="marker.icon" :events="marker.events" :content="marker.content" :offset="marker.offset"></el-amap-marker>
                         </el-amap>
                     </div>
                 </el-form-item>
@@ -177,14 +180,15 @@ export default {
             riderId: null,
             reiderList: [],
             dispatchOrderDialog: false,
-            mapZoom: 13,
+            mapZoom: 14,
             mapCenter: [],
             markers: [],
             lngArr: [],
             latArr: [],
             autoFresh: false,
             cancelOrderDialog: false,
-            cancelReason: ''
+            cancelReason: '',
+            searchDom: null
         }
     },
     created: function() {
@@ -207,13 +211,47 @@ export default {
                 clearInterval(this.interVal)
                 this.interVal = null;
             }
+        },
+        riderId: function(newVal, oldVal){
+            if(newVal && oldVal){
+                var oldDom = document.querySelector('.r-' + oldVal);
+                var newDom = document.querySelector('.r-' + newVal);
+                oldDom.style.color = '#fff';
+                newDom.style.color = '#13ce66';
+            }else{
+                this.getRiderDom(newVal, oldVal)
+            }
         }
     },
     destroyed: function() {
         clearInterval(this.interVal)
+        clearInterval(this.searchDom)
         this.interVal = null;
+        this.searchDom = null;
     },
     methods: {
+        //动态获取骑手dom
+        getRiderDom: function(newVal,oldVal){
+            if(newVal == null){
+                clearInterval(this.searchDom);
+                this.searchDom = null;
+                return;
+            }
+            this.searchDom = setTimeout(() => {
+                var newDom = document.querySelector('.r-' + newVal);
+                if(!newDom){
+                    this.getRiderDom(newVal, oldVal);
+                }else{
+                    var oldDom = document.querySelector('.r-' + oldVal);
+                    if(oldDom){
+                        oldDom.style.color = '#fff';                        
+                    }
+                    newDom.style.color = '#13ce66';
+                    clearInterval(this.searchDom);
+                    this.searchDom = null;
+                }
+            }, 500)
+        },
         getOrderList: function() {
             var params = {
                 orderStatus: this.orderStatus,
@@ -225,8 +263,8 @@ export default {
             getOrderLists({ params: params }).then(res => {
                 console.log(res)
                 var str = '?';
-                for (var key in params){
-                    if(params[key]){
+                for (var key in params) {
+                    if (params[key]) {
                         str += key + '=' + params[key] + '&'
                     }
                 }
@@ -241,11 +279,25 @@ export default {
                 this.reiderList = res.list;
                 res.list.forEach((item) => {
                     if (item['riderLocation']['riderLocationLongitude']) {
-                        this.markers.push({ position: [item['riderLocation']['riderLocationLongitude'], item['riderLocation']['riderLocationLatitude']], title: item.riderName, icon: this.formatMakerIconSrc('carrier') })
+                        this.markers.push({
+                            position: [item['riderLocation']['riderLocationLongitude'], item['riderLocation']['riderLocationLatitude']],
+                            title: item.riderName,
+                            content: '<div class="rider-content"><div class="rider-name r-'+item.riderId+'">'+item.riderName+'</div></div>',
+                            icon: this.formatMakerIconSrc('carrier'),
+                            offset: [-21.5, -60],
+                            events: {
+                                click: function() {
+                                    this.riderId = item.riderId;
+                                    this.$confirm('确定要将订单'+ (this.dispatch? '派':'改派') +'给'+item.riderName+'?','派单提示').then(res=>{
+                                        this.dispatchOrder();
+                                    }).catch(()=>{})
+                                }.bind(this)
+                            }
+                        })
                         this.lngArr.push(item['riderLocation']['riderLocationLongitude'])
                         this.latArr.push(item['riderLocation']['riderLocationLatitude'])
                     }
-                })
+                })                
                 this.getAllGeoInfo(this.orderId)
             })
         },
@@ -286,7 +338,7 @@ export default {
         showDispatchOrderDialog: function(row, status) {
             this.dispatch = status;
             this.orderId = row.orderId;
-            // this.riderId = row.riderId;
+            this.riderId = row.orderRider.riderId;
             this.getRiderList()
         },
         getAllGeoInfo: function(orderId) {
@@ -294,7 +346,16 @@ export default {
                 console.log(res)
                 for (var key in res) {
                     if (res[key]['longitude'] && key != 'carrier') {
-                        this.markers.push({ position: [res[key]['longitude'], res[key]['latitude']], title: this.formatMakerTitle(key), icon: this.formatMakerIconSrc(key) })
+                        this.markers.push({
+                            position: [res[key]['longitude'], res[key]['latitude']],
+                            title: this.formatMakerTitle(key),
+                            icon: this.formatMakerIconSrc(key),
+                            content: '',
+                            offset: [-23.65, -33],
+                            event: {
+                                click:() =>{}
+                            }
+                        })
                         this.lngArr.push(res[key]['longitude'])
                         this.latArr.push(res[key]['latitude'])
                     }
@@ -306,6 +367,7 @@ export default {
                 this.mapCenter = [mapCenterLng, mapCenterLat];
 
                 this.dispatchOrderDialog = true;
+
             })
         },
         closedispatchOrderDialog: function() {
@@ -316,6 +378,8 @@ export default {
             this.mapCenter = [];
             this.lngArr = [];
             this.latArr = [];
+            clearInterval(this.searchDom);
+            this.searchDom = null;
 
         },
         dispatchOrder: function() {
@@ -363,7 +427,7 @@ export default {
         formatDisabaled: function(status) {
             return (status == 'WAIT_ALLOCATE' || status == 'DELIVERED' || status == 'TRANSACT_FINISHED' || status == 'CANCELLATION');
         },
-        formatCancelDisabled: function(status){
+        formatCancelDisabled: function(status) {
             return (status == 'DELIVERED' || status == 'TRANSACT_FINISHED' || status == 'CANCELLATION' || status == 'REFUSED');
         },
         formatMakerTitle: function(name) {
@@ -407,16 +471,16 @@ export default {
                 })
             }).catch(() => {});
         },
-        closeCancelOrderDialog: function(){
+        closeCancelOrderDialog: function() {
             this.orderId = 0;
             this.cancelReason = '';
             this.cancelOrderDialog = false;
         },
-        cancelOrderBtn: function(row){
+        cancelOrderBtn: function(row) {
             this.orderId = row.orderId;
             this.cancelOrderDialog = true;
         },
-        cancelOrder: function(){
+        cancelOrder: function() {
             var params = {
                 orderId: this.orderId,
                 content: this.cancelReason
@@ -467,6 +531,7 @@ export default {
         width: 100%;
         height: 500px;
     }
+
 }
 
 </style>
