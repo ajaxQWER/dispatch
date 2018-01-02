@@ -397,10 +397,8 @@ export default {
                 })
                 return;
             }
-            var orderId = [];
-            orderId.push(this.orderId)
             var params = {
-                orderIds: orderId,
+                orderId: this.orderId,
                 riderId: this.riderId
             }
             console.log(params)
