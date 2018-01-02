@@ -5,7 +5,6 @@ import axios from 'axios';
 var ajax = axios.create({
     baseURL: process.env.BASE_URL, //根据环境选择地址
     headers: {},
-    timeout: 10000, //超时设置
     withCredentials: true, //cookie
     crossDomain: true //跨域
 });

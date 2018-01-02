@@ -1,5 +1,5 @@
 <template>
-    <el-row class="contain">
+    <el-row class="contain" v-loading="loading">
         <el-row class="title">
             <h3>订单管理</h3>
         </el-row>
@@ -84,11 +84,11 @@
             <el-pagination @current-change="currentChange" :current-page="pageId" :page-size="pageSize" layout="total, prev, pager, next" :total="counts">
             </el-pagination>
         </el-row>
-        <el-dialog :title="dispatch?'派单':'改派'" :visible.sync="dispatchOrderDialog" size="small" @close="closedispatchOrderDialog" class="dialog">
+        <el-dialog :title="dispatch?'派单':'改派'" :visible.sync="dispatchOrderDialog" size="small" @close="closedispatchOrderDialog" class="dialog" :close-on-click-modal="false">
             <el-form label-width="100px">
                 <el-form-item label="订单地图:">
-                    <div class="amap-container" v-if="dispatchOrderDialog">
-                        <el-amap ref="amap" vid="amapDemo" class="amap" :zoom="mapZoom" :center="mapCenter">
+                    <div class="amap-container">
+                        <el-amap v-if="dispatchOrderDialog" ref="amap" vid="amapDemo" class="amap" :zoom="mapZoom" :center="mapCenter">
                             <el-amap-marker v-for="(marker,index) in markers" :key="index" :position="marker.position" :title="marker.title" :icon="marker.icon" :events="marker.events" :content="marker.content" :offset="marker.offset"></el-amap-marker>
                         </el-amap>
                     </div>
@@ -188,7 +188,9 @@ export default {
             autoFresh: false,
             cancelOrderDialog: false,
             cancelReason: '',
-            searchDom: null
+            searchDom: null,
+            loading: false,
+            clickStatus: false
         }
     },
     created: function() {
@@ -260,7 +262,9 @@ export default {
                 isException: this.isException,
                 sqlOrderType: this.sqlOrderType
             }
+            
             getOrderLists({ params: params }).then(res => {
+                
                 console.log(res)
                 var str = '?';
                 for (var key in params) {
@@ -274,6 +278,10 @@ export default {
             })
         },
         getRiderList: function() {
+            if(this.clickStatus){
+                return;
+            }
+            this.clickStatus = true;
             getRiderLists({ params: { pageSize: 99999 } }).then(res => {
                 console.log(res)
                 this.reiderList = res.list;
@@ -367,6 +375,7 @@ export default {
                 this.mapCenter = [mapCenterLng, mapCenterLat];
 
                 this.dispatchOrderDialog = true;
+                this.clickStatus = false;
 
             })
         },
@@ -483,6 +492,7 @@ export default {
                 orderId: this.orderId,
                 content: this.cancelReason
             }
+            
             cancelOrderById(params).then(() => {
                 this.$message({
                     type: 'success',
