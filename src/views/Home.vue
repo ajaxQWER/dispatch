@@ -4,7 +4,7 @@
             <el-col :span="10" class="logo" :class="collapsed?'logo-collapse-width':'logo-width'">
                 <router-link to="/index" class="router-link">
                     <img src="../assets/images/logo.png" alt="logo" v-if="collapsed">
-                    <span v-else-if="!collapsed">共享点餐调度平台</span>
+                    <span v-else-if="!collapsed">蜂鹰配送调度平台</span>
                 </router-link>
             </el-col>
             <el-col :span="10">

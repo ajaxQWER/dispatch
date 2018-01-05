@@ -2,7 +2,7 @@
     <div>
         <el-row>
             <el-col>
-                <h1>欢迎来到共享点餐调度平台</h1>
+                <h1>欢迎来到蜂鹰配送调度平台</h1>
                 <p>用户：{{username}}</p>
                 <p>注册时间：{{registrationTime}}</p>
                 <p>上次登录时间：{{lastLoginTime}}</p>
