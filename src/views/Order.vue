@@ -102,7 +102,7 @@
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button @click="closedispatchOrderDialog">取 消</el-button>
-                <el-button type="primary" @click="dispatchOrder">确 定</el-button>
+                <el-button type="primary" @click="dispatchOrder" :loading="isClick">确 定</el-button>
             </div>
         </el-dialog>
         <el-dialog title="取消订单" :visible.sync="cancelOrderDialog" size="tiny" @close="closeCancelOrderDialog" class="dialog">
@@ -190,7 +190,8 @@ export default {
             cancelReason: '',
             searchDom: null,
             loading: false,
-            clickStatus: false
+            clickStatus: false,
+            isClick: false
         }
     },
     created: function() {
@@ -275,6 +276,7 @@ export default {
                 this.$router.push(str)
                 this.orderList = res.list;
                 this.counts = res.count;
+                this.autoFresh = true;
             })
         },
         getRiderList: function() {
@@ -389,9 +391,10 @@ export default {
             this.latArr = [];
             clearInterval(this.searchDom);
             this.searchDom = null;
-
+            this.isClick = false;
         },
         dispatchOrder: function() {
+            this.isClick = true;
             if (!this.riderId) {
                 this.$message({
                     message: '请选择骑手',
