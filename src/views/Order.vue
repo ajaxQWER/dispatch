@@ -1,10 +1,13 @@
-<template>
+ <template>
     <el-row class="contain" v-loading="loading">
         <el-row class="title">
             <h3>订单管理</h3>
         </el-row>
         <el-row>
             <el-form :inline="true">
+                <el-form-item label="订单搜索">
+                    <el-input v-model.number="sellerOrderNumLike" placeholder="请输入订单后四位按回车" @keyup.enter.native="getOrderList" :maxlength="4"></el-input>
+                </el-form-item>
                 <el-form-item label="订单状态">
                     <el-select v-model="orderStatus" placeholder="请选择订单状态" @change="orderChange">
                         <el-option v-for="(item,index) in orderStatusList" :key="index" :label="item.label" :value="item.value">
@@ -174,6 +177,7 @@ export default {
                 label: '正序',
                 value: 'ASC'
             }],
+            sellerOrderNumLike: null,
             sqlOrderType: 'ASC',
             dispatch: true,
             orderId: 0,
@@ -198,10 +202,12 @@ export default {
         var orderStatus = this.$route.query.orderStatus || '';
         var isException = this.$route.query.isException || '';
         var sqlOrderType = this.$route.query.sqlOrderType || 'DESC';
+        var sellerOrderNumLike = this.$route.query.sellerOrderNumLike || null;
         this.pageId = parseInt(this.$route.query.pageId) || 1;
         this.orderStatus = orderStatus;
         this.isException = isException;
         this.sqlOrderType = sqlOrderType;
+        this.sellerOrderNumLike = sellerOrderNumLike;
         this.getOrderList()
     },
     watch: {
@@ -261,7 +267,8 @@ export default {
                 pageId: this.pageId,
                 pageSize: this.pageSize,
                 isException: this.isException,
-                sqlOrderType: this.sqlOrderType
+                sqlOrderType: this.sqlOrderType,
+                sellerOrderNumLike: this.sellerOrderNumLike
             }
             
             getOrderLists({ params: params }).then(res => {
