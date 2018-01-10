@@ -46,9 +46,6 @@
                         <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.pickUpName?scope.row.pickUpInfo.pickUpName:'-'}}
                             <br><span v-if="scope.row.pickUpInfo.pickUpPhone">({{scope.row.pickUpInfo.pickUpPhone}})</span></template>
                     </el-table-column>
-                    <el-table-column label="门店编号" align="center">
-                        <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.storeCode?scope.row.pickUpInfo.storeCode:'-'}}</template>
-                    </el-table-column>
                     <!-- <el-table-column label="联系方式" align="center">
                         <template slot-scope="scope">{{scope.row.pickUpInfo&&scope.row.pickUpInfo.pickUpPhone?scope.row.pickUpInfo.pickUpPhone:'-'}}</template>
                     </el-table-column> -->
@@ -70,6 +67,9 @@
                 </el-table-column>
                 <el-table-column label="骑手信息" align="center" width="120px">
                     <template slot-scope="scope">{{scope.row.orderRider.riderName}}<br>{{scope.row.orderRider.username}}</template>
+                </el-table-column>
+                <el-table-column label="预计送达" align="center">
+                    <template slot-scope="scope">{{moment(scope.row.requireReceiveTime).format('YYYY-MM-DD HH:mm:ss')}}</template>
                 </el-table-column>
                 <el-table-column label="操作" align="center" width="180px">
                     <template slot-scope="scope">
