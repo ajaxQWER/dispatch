@@ -2,7 +2,9 @@ const NotFound = r => require.ensure([],() => r(require('../views/404.vue')), 'N
 const Login = r => require.ensure([],() => r(require('../views/Login.vue')), 'Login');
 const Home = r => require.ensure([],() => r(require('../views/Home.vue')), 'Home');
 const Index = r => require.ensure([],() => r(require('../views/Index.vue')), 'Index');
-const Rider = r => require.ensure([],() => r(require('../views/Rider.vue')), 'Rider');
+const RiderList = r => require.ensure([],() => r(require('../views/RiderList.vue')), 'RiderList');
+const RiderOffedList = r => require.ensure([],() => r(require('../views/RiderOffedList.vue')), 'RiderOffedList');
+const RiderOffedDetail = r => require.ensure([],() => r(require('../views/RiderOffedDetail.vue')), 'RiderOffedDetail');
 const Order = r => require.ensure([],() => r(require('../views/Order.vue')), 'Order');
 const OrderDetail = r => require.ensure([],() => r(require('../views/OrderDetail.vue')), 'OrderDetail');
 let routes = [{
@@ -32,11 +34,12 @@ let routes = [{
 {
     path: '/',
     component: Home,
-    name: '',
-    leaf: true, //只有一个节点
+    name: '骑手管理',
     iconCls: 'fa fa-motorcycle',
     children: [
-        { path: '/rider', component: Rider, name: '骑手管理' }
+        { path: '/riderList', component: RiderList, name: '骑手列表' },
+        { path: '/riderOffedList', component: RiderOffedList, name: '收工管理' },
+        { path: '/riderOffedDetail', component: RiderOffedDetail, name: '骑手详情', hidden: true }
     ]
 },
 {

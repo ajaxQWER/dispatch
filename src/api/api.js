@@ -88,3 +88,20 @@ export const cancelOrderById = params => {
 export const getOrderGeoInfo = orderId => {
     return ajax.get('handler/order/geoInfo/' + orderId);
 };
+
+//骑手收工列表
+export const riderOffList = params => {
+    return ajax.get('handler/rider/riderOffReason', params);
+};
+//审核骑手收工(通过)
+export const passRiderOffById = params => {
+    return ajax.put('handler/rider/pass', params);
+};
+//审核骑手收工(不通过)
+export const unPassRiderOffById = params => {
+    return ajax.put('handler/rider/noPass', params);
+};
+//查看骑手收工详情
+export const findRiderOffById = riderOffReasonId => {
+    return ajax.get('handler/rider/riderOffReasonId/' + riderOffReasonId);
+};
